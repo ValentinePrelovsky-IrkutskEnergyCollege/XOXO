@@ -15,7 +15,7 @@ int r[10]; // robot made
 int u[10];
 string stat = "";
 bool g = false;
-bool d = true;
+bool d = false;
 
 char answer  = '\0';  int a = 0;const int O = 2;const int X = 1;const int Z = 0;
 
@@ -36,12 +36,15 @@ void printField()
  {
      if (f[position] != 0)
      {
-         cout << "! LOL ! try to set "  << position;
+         cout << "Wrong trying to set "  << position;
      }
-     g = true;
+     else
+     {
+         g = true;
 
-     f[position] = 1;
-     r[position] = 1;
+         f[position] = 1;
+         r[position] = 1;
+     }
  }
  void user(int position)
  {
@@ -127,7 +130,6 @@ void scan_S2()
 void scan_S3()
 {
       //cls();
-    // if 2 is user then f[2] = 2 // busy
     if (scan_position(5) == O) {  f[5] = 2;u[5] =  1; r[5] = 0;}
     if (scan_position(5) == X) {  f[5] = 1; u[5] = 0; r[5] = 1; }
 }
@@ -199,7 +201,6 @@ int intersect(int index, int value)
 bool call(int p1, int p2, int p3, int p4, int p5, int p6, int p7, int p8, int p9)
 {
     bool res = false;
-    bool d = false;
     if  (f[1] == p1)
     {
         if (d)cout << "1T" << "\n";
@@ -278,8 +279,23 @@ bool isRobotWon()
        (colRobotFill(1)==3) || (colRobotFill(2)==3) ||
        (colRobotFill(3)==3) ||
        (robotFill(1)==3) || (robotFill(2)==3) || (robotFill(3)==3)
-    )
-    robot_wins();
+    )robot_wins();
+    if (d)
+    {
+    cout << endl << " JOUR " << endl<<endl;
+    cout << (intR(1)==3)<<endl;
+    cout << (intL(1)==3) <<endl;
+    cout<< (colRobotFill(1)==3) <<endl;
+    cout << (colRobotFill(2)==3) <<endl;
+    cout<< (colRobotFill(3)==3) <<endl;
+
+    cout<< (robotFill(1)==3) <<endl;
+    cout<< (robotFill(2)==3) <<endl;
+    cout <<(robotFill(3)==3)<<endl;
+    cout << "end JOUR" << endl<<endl;
+
+    }
+
 }
 void engage()
 {
@@ -301,8 +317,6 @@ void engage()
 }
 void mySteps()
 {
-    bool d = false;
-
     if (userFill(1)==1)
     {
         cout << "user fill 1 \n";
@@ -503,7 +517,7 @@ int main()
     int ok = 0;
    for (int i = 0 ; (i < 7) ||(stat == "end")|| (stat == "robot wins"); i++)
    {
-    // cls();
+    if (!d)cls();
     printField();
 
     cout << "Your turn: " ;cin >> a; user((int)a) ;cout << endl << stat << endl << endl;
