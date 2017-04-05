@@ -1,7 +1,5 @@
 #include <iostream>
  #include <stdio.h>
-
-
 #ifdef __cplusplus__
   #include <cstdlib>
 #else
@@ -11,18 +9,35 @@
 using namespace std;
 int f[10];     // field
 int fr[10];   // free elements
-int r[10]; // robot made
-int u[10];
-string stat = "";
-
-char answer  = '\0';  int a = 0;const int O = 2;const int X = 1;const int Z = 0;
-
+int r[10]; int u[10];// robot and user
+string stat = "";bool g = false;bool d = false;
+int ok = 0;
+char answer  = '\0';  int a = 0;const int O = 2;const int X = 1;
 void cls(){system("cls");}
+void stepMinFree();
+void checkEmpties();
+
+void step(int position)
+ {
+     if (f[position] != 0)
+     {
+         cout << "Wrong trying to set "  << position;
+         g = false;
+         stepMinFree();
+     }
+     else
+     {
+         g = true;
+
+         f[position] = 1;
+         r[position] = 1;
+     }
+ }
+
 void printField()
 {
     // system("cls");
-    cout << stat;
-    cout << endl;
+    cout << stat;    cout << endl;
     for (int i = 1; i <= 9; i++)
     {
         cout << "f[" << i << "] = " << f[i]<< "\t";
@@ -30,71 +45,42 @@ void printField()
     }
     cout << endl;
 }
- void step(int position)
+ void stepMinFree()
  {
-     if (f[position] != 0)
-     {
-         cout << "! LOL ! try to set "  << position;
-     }
-     f[position] = 1;
-     r[position] = 1;
+    for (int i = 1; i < 10; i++)
+    {
+        if (f[i] == 0)
+        {
+            step(i);
+            return;
+        }
+    }
+    if (d)cout << " no place to step";
  }
  void user(int position)
  {
-     f[position] = 2;
-     u[position] = 2;
+     if (f[position] != 0)
+     {
+         cout << "Wrong trying to set "  << position;
+     }
+     else
+     {
+        f[position] = 2;
+        u[position] = 2;
+     }
  }
 
 void initField()
 {
     for (int i = 0; i < 10; i++)
     {
-        f[i] = 0;           fr[i] = 1;
-        r[i] = 0; u[i] = 0;
+        f[i] = 0;           fr[i] = 1;          r[i] = 0; u[i] = 0;
     }
 }
-void turn_table(int angle)
-{
-    cout << "table turned to " << angle << " deg " << endl;
-}
-int scan_position(int pos)
-{
-    return f[pos];
-}
-void printFree()
-{
-    cout << endl << "free elements: " << endl;
-    for (int i =1 ; i < 10 ; i++)
-    {
-        cout << " " << fr[i];
-        if (i % 3 == 0) cout << endl;
-    }
-    cout << endl;
-}
-void printUser()
-{
-     cout << endl << "user elements: " << endl;
-    for (int i =1 ; i < 10 ; i++)
-    {
-        cout << " " << u[i];
-        if (i % 3 == 0) cout << endl;
-    }
-    cout << endl;
-}
-void printRobot()
-{
- cout << endl << "robot elements: " << endl;
-    for (int i =1 ; i < 10 ; i++)
-    {
-        cout << " " << r[i];
-        if (i % 3 == 0) cout << endl;
-    }
-    cout << endl;
-}
+int scan_position(int pos) {return f[pos];}
 
 void scan_S1()
 {
-     // cls();
     // user
     if (scan_position(2) == O) {  f[2] = 2; u[2] = 1; r[2] = 0;}
     if (scan_position(4) == O) {  f[4] = 2; u[4] = 1; r[4] = 0;}
@@ -123,20 +109,18 @@ void scan_S2()
 void scan_S3()
 {
       //cls();
-    // if 2 is user then f[2] = 2 // busy
     if (scan_position(5) == O) {  f[5] = 2;u[5] =  1; r[5] = 0;}
     if (scan_position(5) == X) {  f[5] = 1; u[5] = 0; r[5] = 1; }
 }
 void scanField()
 {
-    scan_S1();
-    scan_S2();
-    scan_S3();
+    scan_S1();    scan_S2();    scan_S3();
+    checkEmpties();
 }
 bool isEmpty(int index)
 {
     bool res = false;
-    if (f[index] != 1 && f[index] != 2) res = true;
+    if ((f[index] != 1) && (f[index] != 2) && (f[index] == 0) )res = true;
     return   res;
 }
 int rowFill(int index)
@@ -166,76 +150,9 @@ int robotFill(int index)
 
     return r;
 }
-void robot_looses() {cout << endl << "robot looses" << endl;}void robot_wins(){cout << endl << "robot wins " << endl;stat="robot wins";}
+void robot_looses() {cout << endl << "robot looses" << endl;}
+void robot_wins(){cout << endl << "robot wins " << endl;stat="robot wins";}
 
-int intersect(int index, int value)
-{
-    //const int value = 2;
-    int r = 0,res = 0;
-    cout << endl;
-
-    // count in desired column
-    r = index % 3;  if (r == 0)  {    r = (index / 3);}  // define what colums: 1,2 or 3
-
-    if (scan_position(r + 0) == value) res++;   // 1 2 3
-    if (scan_position(r + 3) == value) res++;   // 4 5 6
-    if (scan_position(r + 6) == value) res++;   // 7 8 9
-
-    // count in the desired row
-    if (index % 3 != 0) r = (index / 3 + 1);
-    else {r = index/3; }
-
-    if (scan_position(3 * r - 2) == value)res++;
-    if (scan_position(3 * r - 1) == value)res++;
-    if (scan_position(3 * r - 0) == value)res++;
-
-    return res-1;
-}
-
-bool call(int p1, int p2, int p3, int p4, int p5, int p6, int p7, int p8, int p9)
-{
-    bool res = false;
-    bool d = false;
-    if  (f[1] == p1)
-    {
-        if (d)cout << "1T" << "\n";
-        if (f[2]== p2)
-        {
-            if (d)cout << "2T" << "\n";
-            if (f[3]== p3)
-            {
-                if (d)cout << "T3" << "\n";
-                if (f[4] == p4)
-                {
-                    if (d)cout << "T4" << "\n";
-                    if (f[5] == p5)
-                    {
-                        if (d)cout << "T5" << "\n";
-                        if (f[6] == p6)
-                        {
-                            if (d)cout << "T6" << "\n";
-                            if (f[7] == p7)
-                            {
-                                if (d)cout << "T7" << "\n";
-                                if (f[8] == p8)
-                                {
-                                    if (d)cout << "T8" << "\n";
-                                    if (f[9] == p9)
-                                    {
-                                        if (d)cout << "T9" << "\n";
-                                        res = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-    return res;
-}
 int intL(int u)
 {
     int r = 0;
@@ -252,7 +169,6 @@ int intR(int u)
 
     return r;
 }
-
 int columnFill(int n,int u)
 {
     int r = 0;
@@ -266,58 +182,105 @@ int columnFill(int n,int u)
 int colRobotFill(int n) { return columnFill(n,1);}
 int colUserFill(int n){return columnFill(n, 2);}
 
-void mySteps()
+bool isRobotWon()
 {
-    bool d = true;
-    if (userFill(1)== 2)
+    // is three in any direction
+    if
+    (
+       (intR(1)==3)||(intL(1)==3) ||
+       (colRobotFill(1)==3) || (colRobotFill(2)==3) ||
+       (colRobotFill(3)==3) ||
+       (robotFill(1)==3) || (robotFill(2)==3) || (robotFill(3)==3)
+    )robot_wins();
+    if (d)
+    {
+    cout << endl << " JOUR " << endl;
+    cout << (intR(1)==3) << "\t";  cout << (intL(1)==3) <<"\t";
+    cout<< (colRobotFill(1)==3) << "\t"; cout << (colRobotFill(2)==3) << "\t";cout<< (colRobotFill(3)==3) << "\t";
+    cout<< (robotFill(1)==3) <<"\t";cout<< (robotFill(2)==3) <<"\t";cout <<(robotFill(3)==3)<<endl;
+    cout << "end JOUR" << endl<<endl;
+    }
+    return (
+       (intR(1)==3)||(intL(1)==3) ||
+       (colRobotFill(1)==3) || (colRobotFill(2)==3) ||
+       (colRobotFill(3)==3) ||
+       (robotFill(1)==3) || (robotFill(2)==3) || (robotFill(3)==3)
+    );
+}
+void engage()
+{
+    if (d){cout << "\n engaged" << endl;}
+
+    if (intR(1) == 2)
+    {
+        if (isEmpty(1)){step(1);return;}
+        if (isEmpty(5)){step(5);return;}
+        if (isEmpty(9)){step(9);return;}
+    }
+    else if (intL(1)==2)
+    {
+        if (isEmpty(3)){step(3);return;}
+        if (isEmpty(5)){step(5);return;}
+        if (isEmpty(7)){step(7);return;}
+    }
+    if (userFill(3)==0 && isEmpty(7)){step(7);return;}
+    else if (userFill(3)==1)
+    {
+       if(d) cout << "user fill 3 \n";//789
+    }
+    if (userFill(1)==1)
+    {
+        if(d)cout << "user fill 1 \n";
+    }
+    else if (userFill(2)==0 &&(( userFill(2)==1)||(userFill(3)==1)) )
+    {
+                 if (isEmpty(4)){step(4);return;}
+        else if (isEmpty(6)){step(6);return;}
+    }
+    else if (userFill(1)== 2)
     {
         if (d)cout << "2 at 1 line\n";
-        if (isEmpty(1))
-        {
-            step(1);// 23
-        }
-        else if (isEmpty(2))
-        {
-            step(2);
-        }
-        else if (isEmpty(3))
-        {
-            step(3);
-        }
+
+                 if (f[1]==0){step(1);return;}
+        else if (f[2]==0){step(2);return;}
+        else if (f[3]==0){step(3);return;}
     }
-    if (userFill(2) == 2)
+    else if (userFill(2) == 2)
     {
         if (d) cout << "2 at 2 line\n";
-        if (isEmpty(4))
-        {
-            step(4);// 23
-        }
-        else if (isEmpty(5))
-        {
-            step(5);
-        }
-        else if (isEmpty(6))
-        {
-            step(6);
-        }
+                 if (isEmpty(4)){step(4);return;}
+        else if (isEmpty(5)){step(5);return;}
+        else if (isEmpty(6)){step(6);return;}
     }
-    if (userFill(3)==2)
+    else if (userFill(3)==2)
     {
          if (d)cout << "2 at 3 line\n";
-         if (isEmpty(7))
-        {
-            step(7);// 23
-        }
-        else if (isEmpty(8))
-        {
-            step(8);
-        }
-        else if (isEmpty(9))
-        {
-            step(9);
-        }
+                 if (f[7] == 0){step(7);return;}
+        else if (f[8] == 0){step(8);return;}
+        else if (f[9] == 0){step(9);return;}
     } // 3
 
+    if (colRobotFill(1)==2)
+    {
+                 if (isEmpty(1)){step(1);return;}
+        else if (isEmpty(4)){step(4);return;}
+        else if (isEmpty(7)){step(7);return;}
+    }
+    else if (colRobotFill(2)==2)
+    {
+                 if (isEmpty(2)){step(2);return;}
+        else if (isEmpty(5)){step(5);return;}
+        else if (isEmpty(8)){step(8);return;}
+    }
+    else if (colRobotFill(3)==2)
+    {
+                 if (isEmpty(3)){step(3);return;}
+        else if (isEmpty(6)){step(6);return;}
+        else if (isEmpty(9)){step(9);return;}
+    }
+}
+void mySteps()
+{
     // columns
     if (colUserFill(1)==2)
     {
@@ -325,14 +288,17 @@ void mySteps()
         if (isEmpty(1))
         {
             step(1);// 23
+            return;
         }
         else if (isEmpty(4))
         {
             step(4);
+            return;
         }
         else if (isEmpty(7))
         {
             step(7);
+            return;
         }
     }
     if (colUserFill(2)==2)
@@ -341,14 +307,17 @@ void mySteps()
         if (isEmpty(2))
         {
             step(2);// 23
+            return;
         }
         else if (isEmpty(5))
         {
             step(5);
+            return;
         }
         else if (isEmpty(8))
         {
             step(8);
+            return;
         }
     }
     if (colUserFill(3)==2)
@@ -357,85 +326,128 @@ void mySteps()
         if (isEmpty(3))
         {
             step(3);// 23
+            return;
         }
         else if (isEmpty(6))
         {
             step(5);
+            return;
         }
         else if (isEmpty(9))
         {
             step(9);
+            return;
         }
     }  // 3
-    
+
     //diagonals
     if (intR(2)==2)
     {
-        if (d) cout << "diagon right is 2\n;"
+        if (d) cout << "diagon right is 2\n;";
+        if (isEmpty(1) == 2)
+        {
+            step(1);
+            return;
+        }
+        else if (isEmpty(5) == 2)
+        {
+            step(5);
+            return;
+        }
+        else if (isEmpty(9) == 2)
+        {
+            step(9);
+            return;
+        }
     }
     if (intL(2) == 2)
     {
-        if (d) cout << "diagon left is 2\n;"
-    }
-}
+        if (d) cout << "diagon left is 2\n;";
+        if (isEmpty(3) == 2)
+        {
+            step(3);
+            return;
+        }
+        else if (isEmpty(5) == 2)
+        {
+            step(5);
+            return;
+        }
+        else if (isEmpty(7) == 2)
+        {
+            step(7);
+            return;
+        }
+    }     // intL(2)==2
+    cout << "end of my steps \n";
+    engage();
+}   // end mySteps
 void analyze()
 {
-    if (call (0,0,0,0,1,0,0,0,0) )
-    {
-        step(1);
-    }
-    if (call (2,0,0,0,1,0,0,0,0) )
-    {
-        step(3);
-    }
-if (call (0,2,0,0,1,0,0,0,0) )
-    {
-        step(7);
-    }
-
-    if (call(
-        2,0,1,
-        0,1,0,
-        2,0,0
-    ))
-    {
-        step(4);
-    }
-
-    if (call(
-        2,0,1,
-        2,1,0,
-        0,0,0
-    ))
-    {
-        step(7);
-        robot_wins();
-    }
-
-
     mySteps();
+    isRobotWon();
 }
 
-int main()
+
+void checkEmpties()
 {
-    initField();
+    for (int i = 1; i< 10;i++)
+    {
+        if (f[i] == 0)  ok++;
+    }
+    if (ok==0)
+    {
+        stat = "end";
+        cout << endl << "Game DRAW";
+        if (!d)
+        {
+            getchar();getchar();
+        }
+        exit(2);
+    }
+    ok =0;
+}
+void firstSteps()
+{
     step(5);
-
-    scanField();
-
-   for (int i = 0 ; (i < 7) || (stat == "robot wins"); i++)
-   {
-    // cls();
     printField();
 
     cout << "Your turn: " ;cin >> a; user((int)a) ;
-    scanField();
-    analyze();
+    if (isEmpty(7))
+    {
+        step(7);
+    }
+    else if (isEmpty(3))
+    {
+        step(3);
+    }
+}
+int main()
+{
+    initField();
+    firstSteps();
     printField();
 
-    if (stat == "robot wins")
-    break;
-   }
+   for (int i = 0 ; (i < 6) ||(stat == "end"); i++)
+   {
+        if (!d)cls();
+        printField();
+        scanField();
 
+        cout << "Your turn: " ;cin >> a; user((int)a) ;
+
+        scanField();
+        analyze();
+
+       printField();
+
+        if (stat == "robot wins")     break;
+   }  // end for
+
+    if (!d)
+    {
+        getchar();
+        getchar();
+    }
     return 0;
 }
